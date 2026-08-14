@@ -8,12 +8,18 @@ export class Ball {
   private coreMat!: THREE.MeshStandardMaterial;
 
   /** Red for Tests/day, white under lights — and it gets grubbier as it wears. */
+  private baseColor = 0x9e1414;
+
   setColor(hex: number): void {
+    this.baseColor = hex;
     this.coreMat.color.setHex(hex);
   }
 
   setWearVisual(wear: number): void {
     this.coreMat.roughness = 0.35 + wear * 0.4;
+    // Leather scuffs and dulls as the overs pile up (from the base colour).
+    this.coreMat.color.setHex(this.baseColor);
+    this.coreMat.color.offsetHSL(0, -0.1 * wear, -0.12 * wear);
   }
 
   constructor() {

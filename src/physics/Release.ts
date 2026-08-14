@@ -11,20 +11,28 @@ export interface ReleaseParams {
   spinRpm: number; // magnitude of imparted spin
 }
 
+/**
+ * Spin axes, physically mapped for a ball travelling toward +z:
+ *  - "roll" about the travel axis (z) is what grips the pitch and TURNS the ball
+ *    (it drives the contact-point slip that friction acts on);
+ *  - "topspin" roll about the horizontal x-axis dips the ball via Magnus;
+ *  - a forward tilt on the spin axis adds dip, a backward tilt adds hang.
+ * Sign convention verified against qa/swinglab.ts (legbreak turns to -x for RHB).
+ */
 const SPIN_AXES: Record<DeliveryType, (travelDir: Vector3) => Vector3> = {
-  'seam-up': (t) => new Vector3(-t.z, 0, t.x).normalize(), // gentle backspin around the seam's own axis, keeps seam upright
+  'seam-up': (t) => new Vector3(-t.z, 0, t.x).normalize(), // gentle seam wobble, upright presentation
   outswing: (t) => new Vector3(-t.z, 0, t.x).normalize(),
   inswing: (t) => new Vector3(-t.z, 0, t.x).normalize(),
-  legspin: (t) => new Vector3(t.x, 0.15, t.z).normalize().applyAxisAngle(new Vector3(0, 1, 0), Math.PI / 2),
-  offspin: (t) => new Vector3(t.x, 0.15, t.z).normalize().applyAxisAngle(new Vector3(0, 1, 0), -Math.PI / 2),
-  topspin: () => new Vector3(1, 0, 0),
-  googly: (t) => new Vector3(t.x, 0.15, t.z).normalize().applyAxisAngle(new Vector3(0, 1, 0), -Math.PI / 2),
+  legspin: (t) => new Vector3(0.5, 0, Math.sign(t.z)).normalize(), // side-over-side roll, turns to -x
+  offspin: (t) => new Vector3(0.5, 0, -Math.sign(t.z)).normalize(), // opposite roll, turns to +x
+  topspin: (t) => new Vector3(Math.sign(t.z), 0.1, 0).normalize(), // pure dip, no turn
+  googly: (t) => new Vector3(0.5, 0, -Math.sign(t.z)).normalize(), // the wrong'un: turns to +x
 };
 
 const SEAM_TILT_DEG: Record<DeliveryType, number> = {
   'seam-up': 90, // seam pointing straight down the pitch: minimal swing, relies on pitch seam movement
-  outswing: 22,
-  inswing: -22,
+  outswing: -22, // seam angled so the slipstream pushes the ball AWAY from RHB (-x)
+  inswing: 22, // seam angled the other way: tails back IN (+x)
   legspin: 90,
   offspin: 90,
   topspin: 90,

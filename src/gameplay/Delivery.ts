@@ -181,6 +181,10 @@ export class Delivery {
         this.ctx.bowler.setPosition(0.4, z);
         this.ctx.bowler.applyRun(p * 7.5, 0.4 + p * 0.6);
         this.ctx.strikerEnt.battingStance(this.t);
+        // Non-striker backs up with the bowler's approach.
+        const ns = this.ctx.nonStrikerEnt.root.position;
+        ns.z = BOWLER_CREASE_Z - 0.6 - p * 1.4;
+        this.ctx.nonStrikerEnt.battingStance(this.t);
         if (p >= 1) {
           this.phase = 'action';
           this.t = 0;
@@ -289,14 +293,31 @@ export class Delivery {
       this.shotAnimT += dt;
       const aimRad = ((this.swungCmd?.aimDeg ?? 0) * Math.PI) / 180;
       this.ctx.strikerEnt.playShot(this.swungCmd?.kind ?? 'drive', this.shotAnimT / 0.42, -aimRad * 0.6);
+      // Footwork made visible: the body slides toward the line read.
+      const readRad = THREE.MathUtils.degToRad(THREE.MathUtils.clamp(this.swungCmd?.readAimDeg ?? this.swungCmd?.aimDeg ?? 0, -36, 36));
+      const targetX = 0.42 - Math.tan(readRad) * 0.55;
+      const st = this.ctx.strikerEnt.root.position;
+      st.x += (targetX - st.x) * Math.min(1, dt * 9);
+      if (!this.swungCmd?.charge) {
+        st.z += (STRIKER_CREASE_Z + 0.55 - st.z) * Math.min(1, dt * 6);
+      }
       if (!this.contactDone && this.prevBallPos.z < planeZNow && pos.z >= planeZNow) {
         this.resolveContactAtPlane();
       }
     }
+    // Charging down the track: the batsman visibly advances through the shot.
+    if (this.swungCmd?.charge && this.shotAnimT >= 0) {
+      const st = this.ctx.strikerEnt.root.position;
+      const targetZ = STRIKER_CREASE_Z - 2.2;
+      if (st.z > targetZ) st.z -= dt * 4.5;
+    }
 
+    if (!this.contactDone && !this.padStruck && this.prevBallPos.z < PAD_PLANE_Z && pos.z >= PAD_PLANE_Z) {
+      (this.ctx.hooks as { __dbgCross?: unknown }).__dbgCross = { x: +pos.x.toFixed(2), y: +pos.y.toFixed(2), ck: this.swung ? 'swung' : 'no-swing' };
+    }
     // Pad strike.
     if (!this.contactDone && !this.padStruck && pos.z >= PAD_PLANE_Z && pos.z < STRIKER_STUMPS_Z + 0.3) {
-      if (Math.abs(pos.x - 0.42) < 0.3 && pos.y < 1.05) {
+      if (Math.abs(pos.x - 0.42) < 0.38 && pos.y < 1.1) {
         this.handlePadStrike();
       }
     }
@@ -461,6 +482,7 @@ export class Delivery {
 
   private handlePadStrike(): void {
     this.padStruck = true;
+    (this.ctx.hooks as { __dbgPad?: unknown }).__dbgPad = { x: +this.ctx.ball.state.position.x.toFixed(2), y: +this.ctx.ball.state.position.y.toFixed(2), swung: this.swung };
     const s = this.ctx.ball.state;
     this.ctx.hooks.onPad?.();
 

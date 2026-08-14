@@ -120,7 +120,12 @@ export class Sky {
   readonly material: THREE.MeshBasicMaterial;
   private readonly clouds: THREE.Sprite[] = [];
 
-  constructor(preset: SkyPreset) {
+  constructor(preset: SkyPreset, weather: 'clear' | 'overcast' | 'humid' = 'clear') {
+    if (weather === 'overcast') {
+      preset = { ...preset, cloudOpacity: 1, cloudTint: preset.cloudTint.clone().multiplyScalar(0.72) };
+    } else if (weather === 'humid') {
+      preset = { ...preset, cloudOpacity: 0.95, cloudTint: preset.cloudTint.clone().multiplyScalar(0.88) };
+    }
     this.group.name = 'sky';
     const domeMat = new THREE.MeshBasicMaterial({
       map: makeSkyTexture(preset),
@@ -139,7 +144,8 @@ export class Sky {
       seed = (seed * 16807) % 2147483647;
       return seed / 2147483647;
     };
-    for (let i = 0; i < 16; i++) {
+    const cloudCount = weather === 'clear' ? 10 : 24;
+    for (let i = 0; i < cloudCount; i++) {
       const mat = new THREE.SpriteMaterial({
         map: cloudTex,
         color: preset.cloudTint,

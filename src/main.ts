@@ -56,7 +56,7 @@ async function main(): Promise<void> {
 
     const group = new THREE.Group();
     const time = choices.time;
-    const sky = new Sky(SKY_PRESETS[time]);
+    const sky = new Sky(SKY_PRESETS[time], choices.weather);
     group.add(sky.group);
     const lighting = buildLighting(group as unknown as THREE.Scene, time);
     engine.renderer.toneMappingExposure = lighting.exposure;

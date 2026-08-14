@@ -741,8 +741,38 @@ export class MatchController {
           this.bowlerCricketer.applyRun(t * 0.1, 0.08);
         }
       }
-      for (const f of this.fielders) {
-        if (f.state === 'idle') f.cricketer.fieldingReady(t);
+      const all = this.fielding ? [this.keeper, ...this.fielders] : this.fielders; // bowler has his own walk-back
+      for (const f of all) {
+        if (f.state === 'celebrate') {
+          f.timer += dt;
+          f.cricketer.playCelebrate(f.hasBall ? 'arms' : f.timer % 1.4 < 0.7 ? 'jump' : 'fist', f.timer);
+          if (f.timer > 2.6) f.state = 'idle';
+          continue;
+        }
+        if (f.state === 'appeal') {
+          f.timer += dt;
+          f.cricketer.playAppeal(f.timer);
+          if (f.timer > 1.8) f.state = 'idle';
+          continue;
+        }
+        if (f.state === 'dive') continue; // still getting up
+        // Drift back to the fielding mark between deliveries.
+        f.state = 'idle';
+        const fp = f.cricketer.root.position;
+        const dx = f.home.x - fp.x;
+        const dz = f.home.z - fp.z;
+        const d = Math.hypot(dx, dz);
+        if (d > 0.6) {
+          const step = Math.min(d, dt * 3.4);
+          fp.x += (dx / d) * step;
+          fp.z += (dz / d) * step;
+          f.cricketer.faceToward(f.home.x, f.home.z);
+          f.cricketer.applyRun(t * 1.4 + i01(f.spec.id), 0.42);
+        } else {
+          f.cricketer.faceToward(0.4, STRIKER_STUMPS_Z - 1);
+          if (f === this.keeper) f.cricketer.keeperStance(t);
+          else f.cricketer.fieldingReady(t);
+        }
       }
     }
 
@@ -796,6 +826,10 @@ export class MatchController {
     const inn = this.match.current();
     return `${inn.batting.shortName} ${inn.runs}/${inn.wickets} (${inn.oversText})`;
   }
+}
+
+function i01(id: string): number {
+  return (Math.abs(hashCode(id)) % 100) / 100;
 }
 
 function hashCode(s: string): number {

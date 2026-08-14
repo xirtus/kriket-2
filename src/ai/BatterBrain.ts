@@ -171,7 +171,7 @@ export class BatterBrain implements BattingController {
 
     // Timing: when to trigger relative to ball reaching the plane. Skill shrinks error.
     const baseTime = view.tSinceRelease + Math.max(0, view.timeToPlane);
-    const err = gaussian(rng) * (0.115 - skill * 0.088) * deception;
+    const err = gaussian(rng) * (0.165 - skill * 0.115) * deception;
     this.swingAt = Math.max(view.tSinceRelease + 0.02, baseTime + err - 0.14); // trigger slightly early: anim has windup
     this.command = { kind, aimDeg, readAimDeg: readAim, charge };
   }

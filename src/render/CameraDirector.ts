@@ -56,7 +56,9 @@ export class CameraDirector {
   toReplay(): void {
     this.state = 'replay';
     this.stateT = 0;
-    this.pos.set(26, 3.2, 2.0);
+    this.pos.set(19, 2.6, 1.6);
+    this.camera.fov = 27;
+    this.camera.updateProjectionMatrix();
     this.look.set(0, 0.8, 2);
     this.camera.position.copy(this.pos);
   }

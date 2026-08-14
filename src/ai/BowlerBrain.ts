@@ -65,7 +65,7 @@ export function planDelivery(
       type = rng() < 0.55 ? 'outswing' : 'inswing';
       lengthM = range(rng, 3.4, 6.2);
       // Outswing starts at the stumps and leaves; inswing starts outside off and tails in.
-      line = type === 'outswing' ? range(rng, -0.15, 0.05) : range(rng, -0.45, -0.3);
+      line = type === 'outswing' ? range(rng, -0.15, 0.05) : range(rng, -0.12, 0.05);
       speedKmh = base + range(rng, -4, 2);
     } else if (r < 0.62 && !powerplay) {
       // Slower ball, into the pitch on off.
