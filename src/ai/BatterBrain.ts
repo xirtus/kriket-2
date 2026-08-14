@@ -27,6 +27,8 @@ export class BatterBrain implements BattingController {
     private readonly getSituation: () => { runsNeeded: number | null; ballsLeft: number | null; wicketsDown: number },
     private readonly getField: () => FieldPlacement,
     private readonly getBowlerSkill: () => number = () => 75,
+    /** Difficulty bias: shifts the effective batting rating (human-bowling modes). */
+    private readonly skillBias = 0,
   ) {
     const base = spec.ratings.batting / 100;
     this.isTest = format === 'TEST';
@@ -51,7 +53,7 @@ export class BatterBrain implements BattingController {
   }
 
   onFlight(view: BattingView, _dt: number): ShotCommand | null {
-    const skill = this.spec.ratings.batting / 100;
+    const skill = clamp01((this.spec.ratings.batting + this.skillBias) / 100);
 
     // Decide early in flight, once a length read is available.
     if (!this.decided && view.tSinceRelease > 0.06) {
@@ -157,7 +159,7 @@ export class BatterBrain implements BattingController {
     // Bat follows the LINE READ: aim tracks the judged line exactly, biased a
     // little toward gaps. Misreads (and late swing) are what beat the bat.
     // Deception gap: elite bowling vs weak batting genuinely beats the bat.
-    const deception = 1 + Math.max(-0.15, (this.getBowlerSkill() - this.spec.ratings.batting) / 70);
+    const deception = 1 + Math.max(-0.15, (this.getBowlerSkill() - (this.spec.ratings.batting + this.skillBias)) / 70);
     const lineErr = gaussian(rng) * (1 - skill * 0.82) * 9 * deception;
     const readLine = line + THREE.MathUtils.degToRad(lineErr) * 1.2;
     const aimIdeal = -Math.atan2(readLine, 1.35) * (180 / Math.PI);

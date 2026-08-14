@@ -1,11 +1,11 @@
-import type { Format, PitchId, TeamSpec, TimeOfDay, WeatherId } from '../cricket/Types';
+import type { Difficulty, Format, PitchId, TeamSpec, TimeOfDay, WeatherId } from '../cricket/Types';
 import { TEAMS } from '../cricket/Teams';
 
 const CSS = `
-.kmenu { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
-  font-family: 'Segoe UI', system-ui, Arial, sans-serif; color: #fff;
-  background: radial-gradient(ellipse at 50% 30%, rgba(10,30,20,0.88), rgba(2,6,10,0.96)); z-index: 10; }
-.kmenu .panel { text-align: center; max-width: 860px; width: 92%; }
+.kmenu { position: fixed; inset: 0; display: flex; font-family: 'Segoe UI', system-ui, Arial, sans-serif; color: #fff;
+  background: radial-gradient(ellipse at 50% 30%, rgba(10,30,20,0.88), rgba(2,6,10,0.96)); z-index: 10;
+  overflow-y: auto; }
+.kmenu .panel { text-align: center; max-width: 860px; width: 92%; margin: auto; padding: 24px 0; }
 .kmenu h1 { font-size: 84px; margin: 0 0 4px; letter-spacing: 10px; font-weight: 900;
   background: linear-gradient(180deg,#fff,#7dd8a0); -webkit-background-clip: text; background-clip: text; color: transparent;
   text-shadow: 0 12px 44px rgba(60,220,140,0.25); }
@@ -37,6 +37,8 @@ export interface SetupChoices {
   time: TimeOfDay;
   venueName: string;
   boundary: number;
+  difficulty: Difficulty;
+  spectate: boolean;
 }
 
 export class Menus {
@@ -62,17 +64,21 @@ export class Menus {
     this.overlay = null;
   }
 
-  showTitle(onPlay: () => void): void {
+  showTitle(onPlay: () => void, onWatch?: () => void): void {
     const el = this.show(`
       <h1>KRIKET</h1>
       <h2>A NEXT-GENERATION CRICKET SIMULATION</h2>
-      <div class="row"><button class="play" id="kplay">PLAY</button></div>
+      <div class="row">
+        <button class="play" id="kplay">PLAY</button>
+        <button class="play" id="kwatch" style="background:linear-gradient(180deg,#4bafff,#2470c0);box-shadow:0 8px 30px rgba(75,175,255,0.35)">WATCH AI v AI</button>
+      </div>
       <div class="section">FULL PHYSICS • SEAM • SWING • SPIN • WEAR • FIELDING • ALL THREE FORMATS</div>
     `);
     el.querySelector('#kplay')!.addEventListener('click', onPlay);
+    if (onWatch) el.querySelector('#kwatch')!.addEventListener('click', onWatch);
   }
 
-  showSetup(onStart: (c: SetupChoices) => void): void {
+  showSetup(onStart: (c: SetupChoices) => void, spectate = false): void {
     const formats: Format[] = ['T20', 'ODI', 'TEST'];
     const pitches: { id: PitchId; label: string }[] = [
       { id: 'flat_batting', label: 'Flat Deck' },
@@ -90,6 +96,11 @@ export class Menus {
       { id: 'twilight', label: 'Twilight' },
       { id: 'night', label: 'Night (lights)' },
     ];
+    const difficulties: { id: Difficulty; label: string; sub: string }[] = [
+      { id: 'rookie', label: 'Rookie', sub: 'generous timing' },
+      { id: 'club', label: 'Club', sub: 'the intended game' },
+      { id: 'pro', label: 'Pro', sub: 'punishing' },
+    ];
 
     const state = {
       format: 'T20' as Format,
@@ -98,6 +109,7 @@ export class Menus {
       pitch: 'flat_batting' as PitchId,
       weather: 'clear' as WeatherId,
       time: 'day' as TimeOfDay,
+      difficulty: 'club' as Difficulty,
     };
 
     const el = this.show('<h1 style="font-size:46px">MATCH SETUP</h1><div id="body"></div>');
@@ -117,16 +129,18 @@ export class Menus {
         <div class="row">${formats
           .map((f) => `<div class="card ${state.format === f ? 'sel' : ''}" data-k="format" data-v="${f}"><div class="big">${f}</div><div class="small">${f === 'T20' ? '20 overs' : f === 'ODI' ? '50 overs' : '4 innings'}</div></div>`)
           .join('')}</div>
-        <div class="section">YOUR TEAM</div>
+        <div class="section">${spectate ? 'TEAM A' : 'YOUR TEAM'}</div>
         <div class="row">${teamCards(state.playerTeam, 'playerTeam')}</div>
-        <div class="section">OPPONENT</div>
+        <div class="section">${spectate ? 'TEAM B' : 'OPPONENT'}</div>
         <div class="row">${teamCards(state.opponent, 'opponent')}</div>
+        ${spectate ? '' : `<div class="section">DIFFICULTY</div>
+        <div class="row">${difficulties.map((d) => `<div class="card ${state.difficulty === d.id ? 'sel' : ''}" data-k="difficulty" data-v="${d.id}"><div class="big">${d.label}</div><div class="small">${d.sub}</div></div>`).join('')}</div>`}
         <div class="section">PITCH</div>
         <div class="row">${pitches.map((p) => `<div class="card ${state.pitch === p.id ? 'sel' : ''}" data-k="pitch" data-v="${p.id}">${p.label}</div>`).join('')}</div>
         <div class="section">CONDITIONS</div>
         <div class="row">${weathers.map((w) => `<div class="card ${state.weather === w.id ? 'sel' : ''}" data-k="weather" data-v="${w.id}">${w.label}</div>`).join('')}
         ${times.map((t) => `<div class="card ${state.time === t.id ? 'sel' : ''}" data-k="time" data-v="${t.id}">${t.label}</div>`).join('')}</div>
-        <div class="row"><button class="play" id="kstart">START MATCH</button></div>
+        <div class="row"><button class="play" id="kstart">${spectate ? 'START BROADCAST' : 'START MATCH'}</button></div>
       `;
       body.querySelectorAll('.card[data-k]').forEach((card) => {
         card.addEventListener('click', () => {
@@ -138,6 +152,7 @@ export class Menus {
           else if (k === 'pitch') state.pitch = v as PitchId;
           else if (k === 'weather') state.weather = v as WeatherId;
           else if (k === 'time') state.time = v as TimeOfDay;
+          else if (k === 'difficulty') state.difficulty = v as Difficulty;
           render();
         });
       });
@@ -149,6 +164,7 @@ export class Menus {
           ...state,
           venueName: 'The Oval Ring',
           boundary: 64 + Math.round(Math.random() * 6),
+          spectate,
         });
       });
     };

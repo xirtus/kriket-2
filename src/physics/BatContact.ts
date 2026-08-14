@@ -30,12 +30,19 @@ const MAX_TIMING_FOR_CONTACT = 0.11; // s, +/-110ms - human reaction-time-scale 
 const OFFSET_QUALITY_SCALE = 0.17; // m
 const TIMING_QUALITY_SCALE = 0.065; // s
 
-export function resolveBatContact(state: BallState, swing: BatSwing): ContactResult {
+/**
+ * @param forgiveness Scales the outright-miss windows (difficulty setting):
+ *   1.35 = rookie (very hard to play and miss), 0.85 = pro (punishing).
+ */
+export function resolveBatContact(state: BallState, swing: BatSwing, forgiveness = 1): ContactResult {
   const offsetPenalty = Math.abs(swing.sweetSpotOffset) / OFFSET_QUALITY_SCALE;
   const timingPenalty = Math.abs(swing.timingError) / TIMING_QUALITY_SCALE;
   const quality = clamp01(1 - 0.6 * offsetPenalty - 0.6 * timingPenalty);
 
-  if (Math.abs(swing.sweetSpotOffset) > MAX_OFFSET_FOR_CONTACT || Math.abs(swing.timingError) > MAX_TIMING_FOR_CONTACT) {
+  if (
+    Math.abs(swing.sweetSpotOffset) > MAX_OFFSET_FOR_CONTACT * forgiveness ||
+    Math.abs(swing.timingError) > MAX_TIMING_FOR_CONTACT * forgiveness
+  ) {
     return { outcome: 'missed', quality: 0, exitSpeed: state.velocity.length() };
   }
 

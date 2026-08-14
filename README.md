@@ -13,7 +13,20 @@ npm install
 npm run dev     # http://localhost:5173
 ```
 
-Title → match setup (format, teams, pitch, conditions, time of day) → toss → play.
+Title → match setup (format, teams, difficulty, pitch, conditions, time of day) →
+toss → play. Or hit **WATCH AI v AI** on the title screen for a self-playing
+broadcast — 1/2/3 set playback speed (live / 2× / 4×), ENTER skips the pause.
+
+### Difficulty
+
+| Setting | Effect |
+|---|---|
+| Rookie | +35% batting contact windows, AI bowlers stray, AI fielders slower to react |
+| Club | The intended tuning |
+| Pro | −15% batting windows, sharper AI execution and fielding, smarter AI batting |
+
+Difficulty applies asymmetrically: it tunes the AI and the human's windows, never
+the AI's own contests (watch mode is always pure club-level AI vs AI).
 
 ### Batting
 | Input | Action |
@@ -46,16 +59,18 @@ ENTER skips the between-ball pause. ESC pauses.
   that fades with the shine, reverse swing with a worn ball at pace, weather
   (overcast/humid) amplifying swing.
 - **Pitch**: restitution, Coulomb friction, seam catch deviation, spin grip,
-  linear+proportional rolling resistance; four surfaces (green seamer, dry turner,
-  flat deck, damp overcast) with baked textures, footmarks and cracks.
+  uneven bounce (shooters that stay low, the odd riser — livelier on worn/dry
+  surfaces), linear+proportional rolling resistance; four surfaces (green seamer,
+  dry turner, flat deck, damp overcast) with baked textures, footmarks and cracks.
 - **Contact**: timing committed at the press; the bat intercepts along the batter's
   line read; edges, mistimed chips and middled drives emerge from a real collision.
 - **Fielding**: reaction times, trajectory prediction, cut-off angles, dive stops,
   fumbles, catches with difficulty-scaled drops, flat throws, overthrows.
 - **Running**: return-time estimation vs crossing time; dives buy you 1.8m;
   direct hits; byes, leg-byes, wides, no-balls, free hits.
-- **Dismissals**: bowled (swept collision — no tunneling), caught, LBW (pitched /
-  impact / would-hit projection), run out, stumped.
+- **Dismissals**: bowled (swept collision — no tunneling, and the bat–pad gate can
+  let a beaten ball through), caught, LBW (pitched / impact / would-hit projection
+  against the stump line), run out, stumped.
 - **AI**: phase-aware bowling plans (new-ball swing, death yorkers), batter brains
   (sector discipline, gap-finding, resource management), reactive captaincy that
   posts sweepers where you're scoring.

@@ -45,6 +45,7 @@ async function main(): Promise<void> {
   let world: World | null = null;
   let controller: MatchController | null = null;
   let paused = false;
+  let spectating = false;
 
   const params = new URLSearchParams(location.search);
   const isQA = params.get('qa') === '1';
@@ -84,8 +85,10 @@ async function main(): Promise<void> {
         time: choices.time,
         boundary: choices.boundary,
       },
-      playerTeam: 'home',
+      // In spectate mode the "player team" only decides who bats first — flip a coin.
+      playerTeam: choices.spectate ? (Math.random() < 0.5 ? 'home' : 'away') : 'home',
       seed,
+      difficulty: choices.difficulty,
     };
 
     // Bails physics needs stumps that live in the controller's scene graph — build
@@ -101,7 +104,7 @@ async function main(): Promise<void> {
       trail,
       dust,
       bails,
-    }, simMode ? 'sim' : 'play');
+    }, choices.spectate ? 'watch' : simMode ? 'sim' : 'play');
     // Now wire bails to the controller's actual stumps groups.
     const stumpsGroups: THREE.Group[] = [];
     engine.scene.traverse((o) => {
@@ -115,6 +118,15 @@ async function main(): Promise<void> {
     ctl.setBails(realBails);
     return ctl;
   }
+
+  const showTitleScreen = (): void => {
+    spectating = false;
+    engine.timeScale = 1;
+    menus.showTitle(
+      () => menus.showSetup(startMatch),
+      () => menus.showSetup(startMatch, true),
+    );
+  };
 
   function showResult(): void {
     if (!controller) return;
@@ -138,13 +150,15 @@ async function main(): Promise<void> {
         engine.scene.remove(world.group);
         world = null;
       }
-      menus.showTitle(() => menus.showSetup(startMatch));
+      showTitleScreen();
     });
   }
 
   function startMatch(choices: SetupChoices): void {
     audio.start();
     audio.uiClick();
+    engine.timeScale = 1;
+    spectating = choices.spectate;
     controller = buildWorld(choices, Math.floor(Math.random() * 1e9));
     controller.setOnMatchEnd(() => {
       window.setTimeout(showResult, 1500);
@@ -159,8 +173,9 @@ async function main(): Promise<void> {
         });
       }
     });
+    const battingFirst = controller.match.current().batting.name;
     menus.showToss(
-      `${choices.playerTeam.name} win the toss and elect to BAT first.\n\n${choices.venueName} • ${choices.format} • ${choices.pitch.replace('_', ' ')} • ${choices.weather} • ${choices.time}`,
+      `${battingFirst} win the toss and elect to BAT first.\n\n${choices.venueName} • ${choices.format} • ${choices.pitch.replace('_', ' ')} • ${choices.weather} • ${choices.time}`,
       () => {
         menus.hide();
         if (controller) controller.paused = false;
@@ -168,6 +183,16 @@ async function main(): Promise<void> {
     );
     if (controller) controller.paused = true;
   }
+
+  // Spectate playback-speed keys: 1 = live, 2 = 2×, 3 = 4×.
+  window.addEventListener('keydown', (e) => {
+    if (!spectating || !controller) return;
+    const speed = e.code === 'Digit1' ? 1 : e.code === 'Digit2' ? 2 : e.code === 'Digit3' ? 4 : 0;
+    if (speed > 0) {
+      engine.timeScale = speed;
+      hud.flash(speed === 1 ? 'LIVE SPEED' : `PLAYBACK ${speed}×`, '#4bafff', false);
+    }
+  });
 
   // Pause handling.
   engine.onUpdate(() => {
@@ -189,7 +214,7 @@ async function main(): Promise<void> {
             engine.scene.remove(world.group);
             world = null;
           }
-          menus.showTitle(() => menus.showSetup(startMatch));
+          showTitleScreen();
         },
       );
     }
@@ -221,6 +246,8 @@ async function main(): Promise<void> {
       time: (params.get('time') as SetupChoices['time']) ?? 'day',
       venueName: 'QA Park',
       boundary: 66,
+      difficulty: (params.get('difficulty') as SetupChoices['difficulty']) ?? 'club',
+      spectate: false,
     };
     audio.start();
     controller = buildWorld(defaults, Number(params.get('seed') ?? 42));
@@ -230,7 +257,7 @@ async function main(): Promise<void> {
     controller.setOnInningsEnd((_s, resume) => resume());
     controller.allowReplays = params.get('replays') === '1';
   } else {
-    menus.showTitle(() => menus.showSetup(startMatch));
+    showTitleScreen();
   }
 
   // ─── QA hooks ─────────────────────────────────────────────────────────────

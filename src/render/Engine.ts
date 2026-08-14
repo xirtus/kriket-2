@@ -6,6 +6,8 @@ export class Engine {
   readonly camera: THREE.PerspectiveCamera;
   readonly renderer: WebGPURenderer;
   readonly clock = new THREE.Clock();
+  /** Playback speed multiplier (spectate mode): scales frame dt into the accumulator. */
+  timeScale = 1;
   private updateCallbacks: Array<(dt: number, elapsed: number) => void> = [];
   private accumulator = 0;
   private static readonly FIXED_DT = 1 / 120;
@@ -40,7 +42,7 @@ export class Engine {
 
   start(): void {
     this.renderer.setAnimationLoop(() => {
-      const frameDt = Math.min(this.clock.getDelta(), Engine.MAX_FRAME_DT);
+      const frameDt = Math.min(this.clock.getDelta(), Engine.MAX_FRAME_DT) * this.timeScale;
       this.accumulator += frameDt;
       while (this.accumulator >= Engine.FIXED_DT) {
         this.stepOnce(Engine.FIXED_DT);

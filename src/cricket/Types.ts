@@ -29,6 +29,8 @@ export type Format = 'T20' | 'ODI' | 'TEST';
 export type PitchId = 'green_seamer' | 'dry_turner' | 'flat_batting' | 'damp_english';
 export type WeatherId = 'clear' | 'overcast' | 'humid';
 export type TimeOfDay = 'day' | 'twilight' | 'night';
+/** Human-facing difficulty: scales batting windows, AI execution and fielding. */
+export type Difficulty = 'rookie' | 'club' | 'pro';
 
 export interface VenueSpec {
   name: string;
@@ -45,6 +47,7 @@ export interface MatchSetup {
   venue: VenueSpec;
   playerTeam: 'home' | 'away';
   seed: number;
+  difficulty?: Difficulty; // defaults to 'club' (current tuning)
 }
 
 export type DismissalKind = 'bowled' | 'caught' | 'lbw' | 'runout' | 'stumped' | 'hitwicket';

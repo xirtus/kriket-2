@@ -108,6 +108,8 @@ export interface DeliveryContext {
   nonStrikerId: string;
   bowlerId: string;
   strikerBatting: number; // 40..95 rating, drives footwork/line adjustment
+  /** Difficulty: scales the contact/miss windows for THIS batter (human only). */
+  batForgiveness?: number;
   hooks: DeliveryHooks;
 }
 
@@ -122,6 +124,8 @@ export class Delivery {
   private swungCmd: ShotCommand | null = null;
   private contactDone = false;
   private padStruck = false;
+  /** Rolled once per ball: does the ball find pad, or thread the bat-pad gate? */
+  private padGate: boolean | null = null;
   private bounced = false;
   private bounceX: number | null = null;
   private crossedStrikerPlane = false;
@@ -315,9 +319,13 @@ export class Delivery {
     if (!this.contactDone && !this.padStruck && this.prevBallPos.z < PAD_PLANE_Z && pos.z >= PAD_PLANE_Z) {
       (this.ctx.hooks as { __dbgCross?: unknown }).__dbgCross = { x: +pos.x.toFixed(2), y: +pos.y.toFixed(2), ck: this.swung ? 'swung' : 'no-swing' };
     }
-    // Pad strike.
+    // Pad strike. Box tracks the batter's LIVE position (footwork moves the body
+    // across the crease). But pads are not a wall: a beaten bat often leaves the
+    // gate open and the ball threads through to the stumps — rolled ONCE per ball.
     if (!this.contactDone && !this.padStruck && pos.z >= PAD_PLANE_Z && pos.z < STRIKER_STUMPS_Z + 0.3) {
-      if (Math.abs(pos.x - 0.42) < 0.38 && pos.y < 1.1) {
+      if (this.padGate === null) this.padGate = this.ctx.rng() < 0.55;
+      const batterX = this.ctx.strikerEnt.root.position.x;
+      if (this.padGate && pos.x > batterX - 0.34 && pos.x < batterX + 0.3 && pos.y < 1.0) {
         this.handlePadStrike();
       }
     }
@@ -433,7 +441,7 @@ export class Delivery {
       sweetSpotOffset,
       timingError,
     };
-    this.contact = resolveBatContact(s, swing);
+    this.contact = resolveBatContact(s, swing, this.ctx.batForgiveness ?? 1);
     this.contactDone = true;
     (this.ctx.hooks as { __dbgContact?: unknown }).__dbgContact = {
       ballX: +ballX.toFixed(2), batX: +batX.toFixed(2), rawLine: +rawLine.toFixed(2),
@@ -493,7 +501,9 @@ export class Delivery {
     const projY = s.position.y + s.velocity.y * tHit - 0.5 * GRAVITY * tHit * tHit;
     const verdict = lbwVerdict({
       bounceX: this.bounceX,
-      impactX: s.position.x - 0.42,
+      // Impact is judged against the STUMP LINE (x=0), not the batter's body:
+      // hit in front of off stump while shuffled across is still out.
+      impactX: s.position.x,
       projectedXAtStumps: projX,
       projectedYAtStumps: projY,
       shotOffered: this.swung,

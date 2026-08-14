@@ -25,7 +25,23 @@ import type { Stadium } from '../world/Stadium';
 import type { BallTrail, DustPuffs, BailPhysics } from '../render/Effects';
 import type { DeliveryType } from '../physics/BallState';
 
-export type ControllerMode = 'play' | 'sim';
+export type ControllerMode = 'play' | 'watch' | 'sim';
+
+/** Difficulty tuning: how the AI and the physics treat the HUMAN player. */
+interface DifficultyScales {
+  batWindows: number; // human batting contact/miss window multiplier
+  bowlerErr: number; // AI bowler execution-error multiplier when human bats
+  aiBatBias: number; // AI batting-rating shift when human bowls
+  fieldReact: number; // AI fielder reaction-time multiplier when human bats
+  fieldCatch: number; // AI catch-chance multiplier when human bats
+  humanBowlErr: number; // human bowling release-error multiplier
+}
+
+const DIFFICULTY: Record<string, DifficultyScales> = {
+  rookie: { batWindows: 1.35, bowlerErr: 1.3, aiBatBias: -8, fieldReact: 1.25, fieldCatch: 0.85, humanBowlErr: 0.75 },
+  club: { batWindows: 1.0, bowlerErr: 1.0, aiBatBias: 0, fieldReact: 1.0, fieldCatch: 1.0, humanBowlErr: 1.0 },
+  pro: { batWindows: 0.85, bowlerErr: 0.9, aiBatBias: 5, fieldReact: 0.95, fieldCatch: 1.05, humanBowlErr: 1.2 },
+};
 
 interface Deps {
   input: InputManager;
@@ -116,6 +132,7 @@ export class MatchController {
   allowReplays = false;
   private onMatchEnd: (() => void) | null = null;
   private playerBatting = true;
+  private readonly diff: DifficultyScales;
   private deliveryCount = 0;
   private ballSteps = 0;
   runTimeline: { t: number; n: number }[] = [];
@@ -128,6 +145,7 @@ export class MatchController {
     private readonly mode: ControllerMode = 'play',
   ) {
     this.rng = mulberry32(setup.seed);
+    this.diff = DIFFICULTY[setup.difficulty ?? 'club'] ?? DIFFICULTY.club;
     this.match = new MatchState(
       setup.format,
       setup.playerTeam === 'home' ? setup.home : setup.away,
@@ -316,13 +334,23 @@ export class MatchController {
         runsNeeded: inn.target !== null ? inn.target - inn.runs : null,
         ballsLeft: inn.oversLimit !== null ? inn.oversLimit * 6 - inn.legalBalls : null,
         wicketsDown: inn.wickets,
-      }), () => this.field, () => this.currentBowler?.ratings.bowling ?? 75);
+      }), () => this.field, () => this.currentBowler?.ratings.bowling ?? 75,
+        // Human is bowling: difficulty shifts how well the AI bats against them.
+        this.mode === 'play' && inn.batting.id !== this.playerTeamId() ? this.diff.aiBatBias : 0);
+    }
+
+    // Difficulty also tunes the AI fielding effort while the HUMAN is batting.
+    const humanAtBat = this.mode === 'play' && inn.batting.id === this.playerTeamId();
+    if (this.fielding) {
+      this.fielding.reactScale = humanAtBat ? this.diff.fieldReact : 1;
+      this.fielding.catchScale = humanAtBat ? this.diff.fieldCatch : 1;
     }
 
     const useHumanBowling = this.mode === 'play' && !this.playerBatting;
     const plan = useHumanBowling
       ? this.humanPlanPreview()
-      : planDelivery(this.currentBowler!, strikerSpec, inn, this.setup.venue.pitch, this.setup.venue.weather, this.ballWear, Math.floor(inn.legalBalls / 6), this.rng);
+      : planDelivery(this.currentBowler!, strikerSpec, inn, this.setup.venue.pitch, this.setup.venue.weather, this.ballWear, Math.floor(inn.legalBalls / 6), this.rng,
+          humanAtBat ? this.diff.bowlerErr : 1);
 
     const noBall = isNoBallOverstep(this.rng, this.currentBowler!.ratings.bowling);
 
@@ -399,6 +427,7 @@ export class MatchController {
       keeper: this.keeper,
       bowlerEnt: this.bowlerEnt,
       batting: this.playerBatting ? this.humanBat : this.batterBrain!,
+      batForgiveness: this.playerBatting ? this.diff.batWindows : 1,
       strikerId: inn.striker().spec.id,
       nonStrikerId: inn.nonStriker().spec.id,
       bowlerId: this.currentBowler!.id,
@@ -448,7 +477,7 @@ export class MatchController {
     const base = quick ? 128 + spec.ratings.bowling * 0.14 : 84 + spec.ratings.bowling * 0.06;
     const speedKmh = type === 'slower' ? base - 16 : spin ? base : base + 2;
     const spinRpm = spin ? 1900 : type === 'slower' ? 350 : 200;
-    const err = (1 - spec.ratings.bowling / 110) * errorScale;
+    const err = (1 - spec.ratings.bowling / 110) * errorScale * this.diff.humanBowlErr;
     return {
       type: type === 'slower' ? 'seam-up' : type,
       speedKmh,
@@ -511,7 +540,7 @@ export class MatchController {
     // Post-ball excitement decay.
     this.deps.crowd.setExcitement(res.dismissal ? 0.9 : res.boundary ? 0.8 : 0.14);
 
-    const willReplay = this.replayReason !== null && (this.mode === 'play' || this.allowReplays);
+    const willReplay = this.replayReason !== null && (this.mode !== 'sim' || this.allowReplays);
     this.phase = willReplay ? 'replay' : 'betweenBalls';
     this.replayTimer = 0;
     this.betweenTimer = res.dismissal ? 3.4 : res.boundary ? 2.8 : 1.7;
@@ -815,6 +844,10 @@ export class MatchController {
   }
 
   private updateHint(): void {
+    if (this.mode === 'watch') {
+      this.deps.hud.setHint('AI v AI BROADCAST — 1/2/3 playback speed • ENTER skip • ESC pause');
+      return;
+    }
     this.deps.hud.setHint(
       'BAT: ←/→ aim • SPACE drive • SHIFT+SPACE loft • Z defend • X cut/pull • C sweep • ↑ charge • R/F runs<br/>' +
         'BOWL: 1-7 type • arrows aim • SPACE ×2 • ENTER skip',

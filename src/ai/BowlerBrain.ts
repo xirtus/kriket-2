@@ -19,6 +19,7 @@ export function planDelivery(
   ballWear: number,
   overNumber: number,
   rng: Rng,
+  extraErrScale = 1,
 ): DeliveryPlan {
   const skill = bowler.ratings.bowling / 100;
   const isSpinner = bowler.bowlStyle === 'offspin' || bowler.bowlStyle === 'legspin';
@@ -64,7 +65,8 @@ export function planDelivery(
     } else if (r < (swingFriendly ? 0.42 : 0.2)) {
       type = rng() < 0.55 ? 'outswing' : 'inswing';
       lengthM = range(rng, 3.4, 6.2);
-      // Outswing starts at the stumps and leaves; inswing starts outside off and tails in.
+      // Outswing starts at the stumps and leaves; inswing starts just outside
+      // off and tails back toward the pads.
       line = type === 'outswing' ? range(rng, -0.15, 0.05) : range(rng, -0.12, 0.05);
       speedKmh = base + range(rng, -4, 2);
     } else if (r < 0.62 && !powerplay) {
@@ -94,7 +96,7 @@ export function planDelivery(
   }
 
   // Execution error: elite bowlers land it, club bowlers stray.
-  const errScale = 1 - skill * 0.72;
+  const errScale = (1 - skill * 0.72) * extraErrScale;
   line += gaussian(rng) * 0.3 * errScale;
   lengthM += gaussian(rng) * 1.1 * errScale;
   speedKmh += gaussian(rng) * 1.2;

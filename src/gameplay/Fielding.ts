@@ -154,8 +154,13 @@ export class FieldingSim {
 
   reactionTime(f: FielderEnt): number {
     const isKeeper = f.slotName === 'keeper';
-    return isKeeper ? 0.04 + this.rng() * 0.03 : 0.18 + (1 - f.spec.ratings.fielding / 100) * 0.35 + this.rng() * 0.12;
+    const base = isKeeper ? 0.04 + this.rng() * 0.03 : 0.18 + (1 - f.spec.ratings.fielding / 100) * 0.35 + this.rng() * 0.12;
+    return base * this.reactScale;
   }
+
+  /** Difficulty multipliers, set per-innings by the controller (default 1). */
+  reactScale = 1;
+  catchScale = 1;
 
   /** First moment the ball is collectable by this fielder (slow enough to pick up). */
   private interceptFor(f: FielderEnt, traj: THREE.Vector3[], react: number): { point: THREE.Vector3; t: number } | null {
@@ -245,7 +250,7 @@ export class FieldingSim {
           0.12 + (ballSpeed / 40) * 0.45 + (dist / Math.max(0.6, t)) * 0.03 + (needsDive ? 0.28 : 0) + (pt.y > 2.2 ? 0.1 : 0),
         );
         const skill = f.spec.ratings.fielding / 100;
-        const prob = THREE.MathUtils.clamp((0.28 + skill * 0.85 - difficulty) * 0.88, 0.03, 0.96);
+        const prob = THREE.MathUtils.clamp((0.28 + skill * 0.85 - difficulty) * 0.88 * this.catchScale, 0.03, 0.96);
         return { point: pt.clone(), t, needsDive, prob };
       }
     }
