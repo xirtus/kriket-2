@@ -77,7 +77,12 @@ export class Stadium {
     this.group.add(fascia);
 
     // ── Sightscreens at both ends (behind the bowler's arm) ────────────────
-    const sightMat = new THREE.MeshStandardMaterial({ color: 0xf2f2ea, roughness: 0.85 });
+    const sightMat = new THREE.MeshStandardMaterial({
+      color: 0xf2f2ea,
+      roughness: 0.85,
+      emissive: time === 'night' ? new THREE.Color(0x9aa8b8) : new THREE.Color(0x000000),
+      emissiveIntensity: time === 'night' ? 0.5 : 0,
+    });
     for (const end of [-1, 1]) {
       const sight = new THREE.Mesh(new THREE.BoxGeometry(14, 4.4, 0.3), sightMat);
       sight.position.set(0, 2.2, end * (boundary + 6));

@@ -30,13 +30,18 @@ export class BatterBrain implements BattingController {
   ) {
     const base = spec.ratings.batting / 100;
     this.isTest = format === 'TEST';
-    this.aggression = clamp01(0.35 + base * 0.4 + (format === 'T20' ? 0.2 : format === 'TEST' ? -0.3 : 0));
+    this.isOdi = format === 'ODI';
+    this.aggression = clamp01(0.35 + base * 0.4 + (format === 'T20' ? 0.2 : format === 'TEST' ? -0.3 : -0.12));
   }
 
   private formatIsTest(): boolean {
     return this.isTest;
   }
+  private formatIsOdi(): boolean {
+    return this.isOdi;
+  }
   private isTest = false;
+  private isOdi = false;
 
   /** Fresh ball. */
   reset(): void {
@@ -83,7 +88,9 @@ export class BatterBrain implements BattingController {
       else if (rrr > 7) aggro = clamp01(aggro + 0.15);
       else if (rrr < 4.5) aggro = clamp01(aggro - 0.15);
     }
-    if (sit.wicketsDown >= 7) aggro = clamp01(aggro - 0.25);
+    const wkGate = this.isTest ? 99 : this.formatIsOdi() ? 5 : 7;
+    if (sit.wicketsDown >= wkGate + 2) aggro = clamp01(aggro - 0.35);
+    else if (sit.wicketsDown >= wkGate) aggro = clamp01(aggro - 0.18);
     if (view.noBall) aggro = 1; // free swing
 
     // Leave wide junk alone unless chasing hard (Tests: leaves are a virtue).

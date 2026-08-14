@@ -5,9 +5,9 @@ const pitch = process.argv[3] ?? 'flat_batting';
 const weather = process.argv[4] ?? 'clear';
 const browser = await chromium.launch({ headless: true, args: ['--enable-unsafe-webgpu', '--use-angle=metal'] });
 const page = await browser.newPage({ viewport: { width: 960, height: 540 } });
-await page.goto(`http://localhost:5199/?qa=1&sim=1&seed=${seed}&format=T20&pitch=${pitch}&weather=${weather}`, { waitUntil: 'networkidle' });
+await page.goto(`http://localhost:5199/?qa=1&sim=1&seed=${seed}&format=${process.env.FMT ?? 'T20'}&pitch=${pitch}&weather=${weather}`, { waitUntil: 'networkidle' });
 await page.waitForFunction(() => window.__kriket !== undefined, null, { timeout: 20000 });
-for (let i = 0; i < 600; i++) {
+for (let i = 0; i < 1400; i++) {
   const st = await page.evaluate(() => {
     window.__kriket.fastForward(10);
     const c = window.__kriket.getController();

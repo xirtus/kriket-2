@@ -5,14 +5,24 @@ import { BallState } from '../physics/BallState';
 export class Ball {
   readonly mesh: THREE.Group;
   state = new BallState();
+  private coreMat!: THREE.MeshStandardMaterial;
+
+  /** Red for Tests/day, white under lights — and it gets grubbier as it wears. */
+  setColor(hex: number): void {
+    this.coreMat.color.setHex(hex);
+  }
+
+  setWearVisual(wear: number): void {
+    this.coreMat.roughness = 0.35 + wear * 0.4;
+  }
 
   constructor() {
     this.mesh = new THREE.Group();
     this.mesh.name = 'ball';
 
     const coreGeo = new THREE.SphereGeometry(BALL_RADIUS, 24, 24);
-    const coreMat = new THREE.MeshStandardMaterial({ color: 0x9e1414, roughness: 0.35, metalness: 0.05 });
-    const core = new THREE.Mesh(coreGeo, coreMat);
+    this.coreMat = new THREE.MeshStandardMaterial({ color: 0x9e1414, roughness: 0.35, metalness: 0.05 });
+    const core = new THREE.Mesh(coreGeo, this.coreMat);
     core.castShadow = true;
     this.mesh.add(core);
 

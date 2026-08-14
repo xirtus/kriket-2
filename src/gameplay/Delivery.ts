@@ -129,6 +129,7 @@ export class Delivery {
   private keeperHasBall = false;
   private bowlerHasBall = false;
   private returnThrow = false;
+  private byesMode = false;
   private groundedSinceContact = false;
   private dismissal: Dismissal | null = null;
   private boundaryRuns: 4 | 6 | null = null;
@@ -334,8 +335,11 @@ export class Delivery {
         this.keeperTake();
         return;
       }
-      // Past the keeper: byes.
+      // Past the keeper: byes territory — batsmen scamper if it's running away.
+      this.byesMode = true;
       this.enterInPlay(false);
+      const returnT = this.ctx.fielding.estimateCollectableReturn(s, this.ctx.env);
+      if (returnT > 3.0) this.running.startRun();
       return;
     }
 
@@ -780,11 +784,17 @@ export class Delivery {
       }
       // caught/bowled/lbw/stumped: no runs
     } else if (this.boundaryRuns !== null && !this.wideCalled) {
+      if (this.legByesMode || this.byesMode) legByes = 0;
       if (this.legByesMode) legByes = this.boundaryRuns;
+      else if (this.byesMode) byes = this.boundaryRuns;
       else if (this.padStruck && this.contact === null) legByes = this.boundaryRuns;
       else runsOffBat = this.boundaryRuns;
     } else if (this.wideCalled) {
       byes = runs; // additional runs off a wide are byes in the book (wides+byes)
+    } else if (this.byesMode) {
+      if (this.boundaryRuns !== null) byes = this.boundaryRuns;
+      else byes = runs;
+      runsOffBat = 0;
     } else if (this.legByesMode) {
       legByes = runs;
     } else if (this.padStruck) {

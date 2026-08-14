@@ -151,6 +151,8 @@ export class MatchController {
     this.bowlMarker.visible = false;
 
     scene.add(this.ents, this.ball.mesh, this.stumpsA, this.stumpsB, this.aimWedge, this.bowlMarker);
+    // White ball under lights / in coloured clothing; red for Test whites.
+    this.ball.setColor(this.setup.format === 'TEST' && setup.venue.time === 'day' ? 0x9e1414 : 0xf2efe8);
     this.buildInningsEntities();
     this.updateScorebug();
     this.updateHint();
@@ -298,6 +300,7 @@ export class MatchController {
     }
     this.playerBatting = this.mode === 'play' && inn.batting.id === this.playerTeamId();
     this.ballWear = Math.min(1, inn.legalBalls / 85 + inn.runs / 900);
+    this.ball.setWearVisual(this.ballWear);
 
     const strikerSpec = inn.striker().spec;
     if (!this.playerBatting) {

@@ -159,12 +159,14 @@ async function main(): Promise<void> {
         });
       }
     });
-    const youBat = true; // human's team bats first: straight into the fun
     menus.showToss(
       `${choices.playerTeam.name} win the toss and elect to BAT first.\n\n${choices.venueName} • ${choices.format} • ${choices.pitch.replace('_', ' ')} • ${choices.weather} • ${choices.time}`,
-      () => menus.hide(),
+      () => {
+        menus.hide();
+        if (controller) controller.paused = false;
+      },
     );
-    void youBat;
+    if (controller) controller.paused = true;
   }
 
   // Pause handling.

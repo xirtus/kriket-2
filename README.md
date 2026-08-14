@@ -1,0 +1,74 @@
+# KRIKET — a next-generation cricket simulation
+
+A full cricket match — bat, bowl, field, run — built on real physics, running in the
+browser on Three.js (WebGPU, WebGL2 fallback). Every delivery is a live physical
+event: seam presentation, swing (conventional and reverse), spin, pitch interaction,
+bat–ball collision, fielding, throwing and running between wickets are all simulated,
+not scripted.
+
+## Play
+
+```bash
+npm install
+npm run dev     # http://localhost:5173
+```
+
+Title → match setup (format, teams, pitch, conditions, time of day) → toss → play.
+
+### Batting
+| Input | Action |
+|---|---|
+| ← / → | Aim the shot (yellow wedge) |
+| SPACE | Drive |
+| SHIFT + SPACE | Loft |
+| Z | Defend |
+| X | Cut / pull (follows aim) |
+| C | Sweep |
+| ↑ (hold) | Charge down the track |
+| R / F | Take a run / send back |
+
+Timing is committed at the press: the ball arrives when physics says it arrives.
+Line reading matters — the bat goes where you aim it, and the corridor punishes a
+wrong read.
+
+### Bowling
+| Input | Action |
+|---|---|
+| 1–7 | Seam-up, outswing, inswing, off-spin, leg-spin, googly, slower ball |
+| ← / → / ↑ / ↓ | Move the target marker (line / length) |
+| SPACE ×2 | Start run-up, then hit the release point — release timing sets accuracy |
+
+ENTER skips the between-ball pause. ESC pauses.
+
+## What's simulated
+
+- **Aerodynamics**: quadratic drag, Magnus lift from seam/spin, conventional swing
+  that fades with the shine, reverse swing with a worn ball at pace, weather
+  (overcast/humid) amplifying swing.
+- **Pitch**: restitution, Coulomb friction, seam catch deviation, spin grip,
+  linear+proportional rolling resistance; four surfaces (green seamer, dry turner,
+  flat deck, damp overcast) with baked textures, footmarks and cracks.
+- **Contact**: timing committed at the press; the bat intercepts along the batter's
+  line read; edges, mistimed chips and middled drives emerge from a real collision.
+- **Fielding**: reaction times, trajectory prediction, cut-off angles, dive stops,
+  fumbles, catches with difficulty-scaled drops, flat throws, overthrows.
+- **Running**: return-time estimation vs crossing time; dives buy you 1.8m;
+  direct hits; byes, leg-byes, wides, no-balls, free hits.
+- **Dismissals**: bowled (swept collision — no tunneling), caught, LBW (pitched /
+  impact / would-hit projection), run out, stumped.
+- **AI**: phase-aware bowling plans (new-ball swing, death yorkers), batter brains
+  (sector discipline, gap-finding, resource management), reactive captaincy that
+  posts sweepers where you're scoring.
+- **Presentation**: broadcast camera director (TV frame, ball-follow, wicket zoom,
+  side-on replays), animated crowd that surges on events, procedural stadium audio,
+  day / twilight / night lighting with glowing floodlights, live big-screen score,
+  full scorebug with recent-balls, wagon-ready ball log.
+- **Formats**: T20, ODI, Test (4 innings), eight fictional international squads with
+  role-based ratings.
+
+## QA harness
+
+`qa/` contains the headless Playwright loop used to build the game:
+`shoot.mjs` (screenshots), `sim.mjs`/`sim2.mjs` (full-match AI-vs-AI balance
+sweeps with dismissal/scoring breakdowns), `play.mjs`/`playfull.mjs` (scripted
+human input), `physicslab.ts` (offline physics tuning).

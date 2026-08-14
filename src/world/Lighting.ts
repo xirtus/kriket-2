@@ -14,7 +14,7 @@ export function buildLighting(scene: THREE.Scene, time: TimeOfDay): LightingRig 
   const hemi = new THREE.HemisphereLight(
     preset.zenith.clone().lerp(new THREE.Color(0xffffff), 0.55),
     new THREE.Color(0x2f5d34),
-    time === 'night' ? 0.13 : time === 'twilight' ? 0.45 : 0.75,
+    time === 'night' ? 0.34 : time === 'twilight' ? 0.45 : 0.75,
   );
   scene.add(hemi);
 
@@ -47,12 +47,12 @@ export function buildLighting(scene: THREE.Scene, time: TimeOfDay): LightingRig 
     // Night: floodlights become the key light — a tight cool column over the
     // middle plus a faint fill, so the outfield falls off into the dark.
     sun.color.set(0xdce8ff);
-    sun.intensity = 1.5;
+    sun.intensity = 2.3;
     sun.position.set(24, 80, 14);
-    const fill = new THREE.DirectionalLight(0x8fa8d8, 0.35);
+    const fill = new THREE.DirectionalLight(0x8fa8d8, 0.55);
     fill.position.set(-40, 70, -30);
     scene.add(fill);
-    exposure = 1.1;
+    exposure = 1.28;
   }
   sun.target.position.set(0, 0, 0);
 

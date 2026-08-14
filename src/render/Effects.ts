@@ -16,9 +16,9 @@ export class BallTrail {
     geo.setAttribute('position', new THREE.BufferAttribute(this.positions, 3));
     this.mat = new THREE.PointsMaterial({
       color: 0xff7a52,
-      size: 0.12,
+      size: 0.17,
       transparent: true,
-      opacity: 0.85,
+      opacity: 0.95,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
       sizeAttenuation: true,
