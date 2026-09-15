@@ -17,6 +17,7 @@ export interface CricketerOptions {
 }
 
 const SKIN_TONES = [0xf0c8a0, 0xd9a066, 0xc68642, 0x8d5524, 0x6b4424, 0xeab892];
+const FOOT_SOLE_CLEARANCE = 0.006;
 
 export function skinToneFor(id: string): number {
   let h = 0;
@@ -46,6 +47,8 @@ export class Cricketer {
   readonly batPivot = new THREE.Group();
   readonly bat: THREE.Mesh | null = null;
   readonly height: number;
+  private readonly shoes: THREE.Mesh[] = [];
+  private readonly footBox = new THREE.Box3();
 
   constructor(opts: CricketerOptions) {
     const scale = opts.scale ?? 1;
@@ -138,6 +141,7 @@ export class Cricketer {
       const shoe = cast(new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.07, 0.24), new THREE.MeshStandardMaterial({ color: 0xf2f2f2, roughness: 0.5 })));
       shoe.position.set(0, -0.36, 0.05);
       knee.add(shoe);
+      this.shoes.push(shoe);
       if (opts.pads) {
         const pad = cast(new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.34, 0.09), new THREE.MeshStandardMaterial({ color: 0xf5f2e8, roughness: 0.7 })));
         pad.position.set(0, -0.16, 0.075);
@@ -180,6 +184,16 @@ export class Cricketer {
     this.hipR.rotation.x = p.hipRRotX;
     this.kneeL.rotation.x = p.kneeLRotX;
     this.kneeR.rotation.x = p.kneeRRotX;
+    this.plantFeet();
+  }
+
+  private plantFeet(): void {
+    if (Math.abs(this.root.rotation.z) > 1e-4) return;
+    this.root.updateMatrixWorld(true);
+    this.footBox.makeEmpty();
+    for (const shoe of this.shoes) this.footBox.expandByObject(shoe);
+    if (!Number.isFinite(this.footBox.min.y)) return;
+    this.hips.position.y += (FOOT_SOLE_CLEARANCE - this.footBox.min.y) / this.root.scale.y;
   }
 
   setPosition(x: number, z: number): void {

@@ -1,0 +1,1121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KRIKET Game Manual</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --ink: #f7f3e8;
+        --muted: #bcc7bd;
+        --soft: #87958e;
+        --line: rgba(255, 255, 255, 0.14);
+        --panel: rgba(16, 21, 24, 0.86);
+        --panel-2: rgba(27, 34, 37, 0.92);
+        --grass: #2e7d32;
+        --pitch: #d3bc79;
+        --blue: #4bafff;
+        --red: #e05d4f;
+        --gold: #ffd24b;
+        --green: #36d17c;
+        --black: #080d10;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          linear-gradient(180deg, rgba(8, 13, 16, 0.2), rgba(8, 13, 16, 1) 620px),
+          #080d10;
+        letter-spacing: 0;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .hero {
+        min-height: 78vh;
+        display: grid;
+        align-items: end;
+        position: relative;
+        overflow: hidden;
+        background:
+          linear-gradient(90deg, rgba(8, 13, 16, 0.92), rgba(8, 13, 16, 0.42) 58%, rgba(8, 13, 16, 0.16)),
+          linear-gradient(180deg, rgba(8, 13, 16, 0.1), rgba(8, 13, 16, 0.85)),
+          url("qa/shots/kricket2-grounded.png") center / cover no-repeat;
+      }
+
+      .hero::after {
+        content: "";
+        position: absolute;
+        inset: auto 0 0;
+        height: 76px;
+        background: linear-gradient(180deg, rgba(8, 13, 16, 0), #080d10);
+      }
+
+      .hero-inner {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 96px 0 78px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .kicker {
+        display: inline-flex;
+        gap: 9px;
+        align-items: center;
+        color: var(--gold);
+        font-size: 12px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 1.8px;
+      }
+
+      .kicker::before {
+        content: "";
+        width: 34px;
+        height: 3px;
+        background: var(--gold);
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        line-height: 1.04;
+        letter-spacing: 0;
+      }
+
+      h1 {
+        max-width: 760px;
+        margin-top: 18px;
+        font-size: clamp(54px, 10vw, 116px);
+        font-weight: 950;
+      }
+
+      .hero-copy {
+        max-width: 650px;
+        margin: 22px 0 0;
+        color: #e2e7df;
+        font-size: clamp(18px, 2vw, 24px);
+        line-height: 1.38;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 26px;
+      }
+
+      .button {
+        min-height: 44px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 11px 16px;
+        color: var(--ink);
+        background: rgba(255, 255, 255, 0.08);
+        font: inherit;
+        font-weight: 800;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .button.primary {
+        color: #06100a;
+        border-color: transparent;
+        background: linear-gradient(180deg, #4be58c, var(--green));
+      }
+
+      .button:hover {
+        filter: brightness(1.12);
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        border-bottom: 1px solid var(--line);
+        background: rgba(8, 13, 16, 0.9);
+        backdrop-filter: blur(16px);
+      }
+
+      .topbar-inner {
+        width: min(1180px, calc(100% - 24px));
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 16px;
+        align-items: center;
+        min-height: 64px;
+      }
+
+      .brand {
+        font-weight: 950;
+        letter-spacing: 1.4px;
+      }
+
+      nav {
+        display: flex;
+        gap: 4px;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+
+      nav::-webkit-scrollbar {
+        display: none;
+      }
+
+      nav a {
+        border-radius: 8px;
+        color: var(--muted);
+        padding: 9px 10px;
+        font-size: 13px;
+        font-weight: 800;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+
+      nav a.active,
+      nav a:hover {
+        color: var(--ink);
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .search {
+        width: 210px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 10px 12px;
+        color: var(--ink);
+        background: rgba(255, 255, 255, 0.06);
+        font: inherit;
+      }
+
+      main {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      section {
+        padding: 72px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        scroll-margin-top: 78px;
+      }
+
+      .section-head {
+        display: grid;
+        grid-template-columns: minmax(0, 0.72fr) minmax(280px, 0.28fr);
+        gap: 28px;
+        align-items: end;
+        margin-bottom: 24px;
+      }
+
+      h2 {
+        font-size: clamp(32px, 5vw, 62px);
+        font-weight: 950;
+      }
+
+      .lead {
+        margin: 0;
+        color: var(--muted);
+        font-size: 17px;
+        line-height: 1.6;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 14px;
+      }
+
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 18px;
+      }
+
+      .card h3 {
+        margin-bottom: 10px;
+        color: #fff;
+        font-size: 20px;
+      }
+
+      .card p,
+      .card li {
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .card p {
+        margin: 0;
+      }
+
+      .span-3 {
+        grid-column: span 3;
+      }
+
+      .span-4 {
+        grid-column: span 4;
+      }
+
+      .span-5 {
+        grid-column: span 5;
+      }
+
+      .span-6 {
+        grid-column: span 6;
+      }
+
+      .span-7 {
+        grid-column: span 7;
+      }
+
+      .span-8 {
+        grid-column: span 8;
+      }
+
+      .span-12 {
+        grid-column: span 12;
+      }
+
+      .stat {
+        display: grid;
+        gap: 6px;
+      }
+
+      .stat strong {
+        font-size: 31px;
+        color: #fff;
+      }
+
+      .stat span {
+        color: var(--soft);
+        font-size: 13px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 650px;
+        background: rgba(16, 21, 24, 0.86);
+      }
+
+      th,
+      td {
+        padding: 13px 14px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        color: var(--gold);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      td {
+        color: var(--muted);
+        line-height: 1.45;
+      }
+
+      kbd {
+        display: inline-flex;
+        min-width: 28px;
+        min-height: 26px;
+        align-items: center;
+        justify-content: center;
+        margin: 1px 3px;
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        border-bottom-color: rgba(255, 255, 255, 0.38);
+        border-radius: 6px;
+        padding: 2px 7px;
+        color: #fff;
+        background: #151b1f;
+        box-shadow: inset 0 -2px 0 rgba(255, 255, 255, 0.08);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      .tabs,
+      .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+
+      .tab,
+      .filter {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 9px 12px;
+        color: var(--muted);
+        background: rgba(255, 255, 255, 0.06);
+        font: inherit;
+        font-weight: 850;
+        cursor: pointer;
+      }
+
+      .tab.active,
+      .filter.active {
+        color: #06100a;
+        border-color: transparent;
+        background: var(--gold);
+      }
+
+      .tab-panel {
+        display: none;
+      }
+
+      .tab-panel.active {
+        display: block;
+      }
+
+      .pitch-diagram {
+        min-height: 440px;
+        position: relative;
+        overflow: hidden;
+        background:
+          linear-gradient(90deg, rgba(46, 125, 50, 0.86), rgba(54, 137, 57, 0.9)),
+          var(--grass);
+      }
+
+      .pitch-lane {
+        position: absolute;
+        left: 36%;
+        top: -8%;
+        width: 28%;
+        height: 116%;
+        background:
+          linear-gradient(90deg, transparent 0 8%, rgba(255, 255, 255, 0.5) 8% 8.5%, transparent 8.5% 91.5%, rgba(255, 255, 255, 0.5) 91.5% 92%, transparent 92%),
+          repeating-linear-gradient(0deg, rgba(124, 91, 38, 0.08) 0 18px, rgba(255, 255, 255, 0.05) 18px 20px),
+          var(--pitch);
+        transform: perspective(420px) rotateX(20deg);
+        border-radius: 8px;
+      }
+
+      .marker {
+        position: absolute;
+        left: calc(var(--x) * 1%);
+        top: calc(var(--y) * 1%);
+        transform: translate(-50%, -50%);
+        min-width: 86px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        padding: 8px 9px;
+        color: #fff;
+        background: rgba(8, 13, 16, 0.72);
+        font-size: 12px;
+        font-weight: 850;
+        text-align: center;
+      }
+
+      .marker::before {
+        content: "";
+        display: block;
+        width: 10px;
+        height: 10px;
+        margin: -15px auto 6px;
+        border-radius: 50%;
+        background: var(--gold);
+        box-shadow: 0 0 0 4px rgba(255, 210, 75, 0.22);
+      }
+
+      .timeline {
+        display: grid;
+        gap: 10px;
+      }
+
+      .roadmap-item {
+        display: grid;
+        grid-template-columns: 130px 1fr auto;
+        gap: 12px;
+        align-items: start;
+      }
+
+      .tag {
+        display: inline-flex;
+        width: fit-content;
+        border-radius: 999px;
+        padding: 5px 9px;
+        color: #06100a;
+        background: var(--green);
+        font-size: 11px;
+        font-weight: 950;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+      }
+
+      .tag.now {
+        background: var(--blue);
+      }
+
+      .tag.next {
+        background: var(--gold);
+      }
+
+      .tag.later {
+        background: #d68bff;
+      }
+
+      .meter-row {
+        display: grid;
+        gap: 9px;
+      }
+
+      .meter-label {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        color: var(--muted);
+        font-weight: 800;
+      }
+
+      .meter {
+        height: 12px;
+        overflow: hidden;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .meter > span {
+        display: block;
+        height: 100%;
+        width: var(--value);
+        background: linear-gradient(90deg, var(--blue), var(--green), var(--gold));
+      }
+
+      .checklist {
+        display: grid;
+        gap: 9px;
+      }
+
+      .check {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 11px;
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .check input {
+        margin-top: 4px;
+        accent-color: var(--green);
+      }
+
+      .check span {
+        color: var(--muted);
+        line-height: 1.4;
+      }
+
+      .callout {
+        border-left: 4px solid var(--gold);
+        padding: 16px 18px;
+        background: rgba(255, 210, 75, 0.08);
+        color: #efe7c5;
+      }
+
+      .glossary {
+        columns: 2 320px;
+        column-gap: 18px;
+      }
+
+      .glossary p {
+        break-inside: avoid;
+        margin: 0 0 12px;
+        color: var(--muted);
+      }
+
+      .glossary strong {
+        color: #fff;
+      }
+
+      .footer {
+        padding: 46px 0 64px;
+        color: var(--soft);
+        text-align: center;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      mark {
+        border-radius: 4px;
+        padding: 0 3px;
+        color: #06100a;
+        background: var(--gold);
+      }
+
+      @media (max-width: 900px) {
+        .topbar-inner {
+          grid-template-columns: 1fr;
+          padding: 12px 0;
+        }
+
+        .search {
+          width: 100%;
+        }
+
+        .section-head {
+          grid-template-columns: 1fr;
+        }
+
+        .span-3,
+        .span-4,
+        .span-5,
+        .span-6,
+        .span-7,
+        .span-8 {
+          grid-column: span 12;
+        }
+
+        .roadmap-item {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media print {
+        .topbar,
+        .hero-actions,
+        .tabs,
+        .filters,
+        .search {
+          display: none;
+        }
+
+        body {
+          color: #111;
+          background: #fff;
+        }
+
+        .hero,
+        .card,
+        table {
+          color: #111;
+          background: #fff;
+        }
+
+        .card p,
+        .card li,
+        td,
+        .lead {
+          color: #333;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="hero" id="top">
+      <div class="hero-inner">
+        <div class="kicker">Official player manual</div>
+        <h1>KRIKET</h1>
+        <p class="hero-copy">
+          A browser cricket sport simulator where the delivery, shot, bounce, catch, run and dismissal are simulated as live events instead of scripted animations.
+        </p>
+        <div class="hero-actions">
+          <a class="button primary" href="#quick-start">Start Playing</a>
+          <a class="button" href="#controls">Controls</a>
+          <a class="button" href="#roadmap">Perfect Simulator Plan</a>
+        </div>
+      </div>
+    </header>
+
+    <div class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">KRIKET MANUAL</div>
+        <nav aria-label="Manual sections">
+          <a href="#quick-start">Quick Start</a>
+          <a href="#match">Match</a>
+          <a href="#controls">Controls</a>
+          <a href="#simulation">Simulation</a>
+          <a href="#strategy">Strategy</a>
+          <a href="#presentation">Presentation</a>
+          <a href="#roadmap">Roadmap</a>
+          <a href="#qa">QA</a>
+        </nav>
+        <input class="search" id="search" type="search" placeholder="Search manual" aria-label="Search manual" />
+      </div>
+    </div>
+
+    <main>
+      <section id="quick-start" data-search>
+        <div class="section-head">
+          <h2>Quick Start</h2>
+          <p class="lead">Launch the game, choose a format and conditions, then play from the first ball. KRIKET supports direct play and AI-vs-AI broadcast mode.</p>
+        </div>
+        <div class="grid">
+          <article class="card span-3 stat">
+            <span>Formats</span>
+            <strong>3</strong>
+            <p>T20, ODI and Test match structures.</p>
+          </article>
+          <article class="card span-3 stat">
+            <span>Teams</span>
+            <strong>8</strong>
+            <p>Fictional international squads with deterministic XIs.</p>
+          </article>
+          <article class="card span-3 stat">
+            <span>Surfaces</span>
+            <strong>4</strong>
+            <p>Green seamer, dry turner, flat batting deck and damp overcast.</p>
+          </article>
+          <article class="card span-3 stat">
+            <span>Renderer</span>
+            <strong>3D</strong>
+            <p>Three.js with WebGPU and WebGL2 fallback.</p>
+          </article>
+          <article class="card span-7">
+            <h3>Local Launch</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Step</th><th>Command or Action</th><th>Result</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Install</td><td><kbd>npm</kbd> <kbd>install</kbd></td><td>Installs Three.js, Vite, TypeScript and QA tooling.</td></tr>
+                  <tr><td>Run</td><td><kbd>npm</kbd> <kbd>run</kbd> <kbd>dev</kbd></td><td>Starts the Vite dev server. The default is usually localhost:5173.</td></tr>
+                  <tr><td>Current session</td><td><kbd>http://127.0.0.1:5202/</kbd></td><td>This kricket2 copy is running on a separate port to avoid the fork.</td></tr>
+                  <tr><td>Instant match</td><td><kbd>?qa=1&amp;sim=1&amp;seed=42</kbd></td><td>Skips menus and starts a deterministic AI simulation for viewing and QA.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+          <article class="card span-5">
+            <h3>First Five Minutes</h3>
+            <ol>
+              <li>Open the game and choose <strong>PLAY</strong> or <strong>WATCH AI v AI</strong>.</li>
+              <li>Select format, team, opponent, difficulty, pitch, weather and time of day.</li>
+              <li>Bat with aim plus shot keys, or bowl with delivery type plus target marker.</li>
+              <li>Use <kbd>R</kbd> to run and <kbd>F</kbd> to send the batters back.</li>
+              <li>Use <kbd>Enter</kbd> to skip between-ball pauses and <kbd>Esc</kbd> to pause.</li>
+            </ol>
+          </article>
+        </div>
+      </section>
+
+      <section id="match" data-search>
+        <div class="section-head">
+          <h2>Match Setup</h2>
+          <p class="lead">The setup screen defines the full playing context: match length, teams, venue behavior, light, weather and how forgiving the human-facing systems should be.</p>
+        </div>
+        <div class="grid">
+          <article class="card span-4">
+            <h3>Formats</h3>
+            <p><strong>T20</strong> compresses pressure into twenty overs. <strong>ODI</strong> stretches innings management and bowler rotation. <strong>Test</strong> uses four innings and rewards patience, wear and conditions.</p>
+          </article>
+          <article class="card span-4">
+            <h3>Difficulty</h3>
+            <p><strong>Rookie</strong> expands batting contact windows and slows AI reactions. <strong>Club</strong> is the intended tuning. <strong>Pro</strong> narrows batting windows and sharpens AI execution.</p>
+          </article>
+          <article class="card span-4">
+            <h3>Watch Mode</h3>
+            <p>AI-vs-AI mode runs the cricket engine as a broadcast. Speed keys <kbd>1</kbd>, <kbd>2</kbd> and <kbd>3</kbd> switch live, 2x and 4x playback.</p>
+          </article>
+          <article class="card span-12">
+            <h3>Squads</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Short</th><th>Team</th><th>Identity</th><th>Squad Construction</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>BHA</td><td>Bharat</td><td>Blue kit with orange trim.</td><td>Generated XI with openers, middle order, keeper, all-rounders, spinners and fast bowlers.</td></tr>
+                  <tr><td>ALB</td><td>Albion</td><td>Deep red kit with navy trim.</td><td>Fictional international roster seeded for repeatability.</td></tr>
+                  <tr><td>STH</td><td>Southern Stars</td><td>Gold and green identity.</td><td>Role templates create batting order and attack balance.</td></tr>
+                  <tr><td>AOT</td><td>Aotearoa</td><td>Black and silver identity.</td><td>Includes keeper and specialist bowlers.</td></tr>
+                  <tr><td>CAL</td><td>Calypso Kings</td><td>Maroon and gold identity.</td><td>Ratings cover batting, bowling and fielding from 40 to 95.</td></tr>
+                  <tr><td>SAV</td><td>Savanna</td><td>Green and yellow identity.</td><td>Fast bowling and fielding are represented in the templates.</td></tr>
+                  <tr><td>SER</td><td>Serendib Lions</td><td>Blue and gold identity.</td><td>Spin and all-rounder roles are part of the generated XI.</td></tr>
+                  <tr><td>IND</td><td>Indus Shaheens</td><td>Green and white identity.</td><td>Generated from fixed seeds so the same team remains familiar.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="controls" data-search>
+        <div class="section-head">
+          <h2>Controls</h2>
+          <p class="lead">KRIKET uses one keyboard map for batting, bowling, running and match flow. Timing is committed when you press the shot or release key.</p>
+        </div>
+        <div class="tabs" role="tablist" aria-label="Control categories">
+          <button class="tab active" data-tab="batting" role="tab">Batting</button>
+          <button class="tab" data-tab="bowling" role="tab">Bowling</button>
+          <button class="tab" data-tab="running" role="tab">Running</button>
+          <button class="tab" data-tab="general" role="tab">General</button>
+        </div>
+        <div class="tab-panel active" id="tab-batting">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Input</th><th>Action</th><th>Use It For</th></tr></thead>
+              <tbody>
+                <tr><td><kbd>Left</kbd> / <kbd>Right</kbd></td><td>Aim the yellow shot wedge.</td><td>Open the face, target gaps, or cover the line.</td></tr>
+                <tr><td><kbd>Space</kbd></td><td>Drive.</td><td>Full balls, good timing windows and grounded scoring.</td></tr>
+                <tr><td><kbd>Shift</kbd> + <kbd>Space</kbd></td><td>Loft.</td><td>Clearing infield or attacking the rope when set.</td></tr>
+                <tr><td><kbd>Z</kbd></td><td>Defend.</td><td>Good balls, late swing, Test-style survival.</td></tr>
+                <tr><td><kbd>X</kbd></td><td>Cut or pull based on aim direction.</td><td>Width, short length and cross-bat scoring.</td></tr>
+                <tr><td><kbd>C</kbd></td><td>Sweep.</td><td>Spin, low bounce and square-leg scoring lanes.</td></tr>
+                <tr><td><kbd>Up</kbd> hold</td><td>Charge.</td><td>Advance at the bowler and turn length into a scoring chance.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="tab-panel" id="tab-bowling">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Input</th><th>Action</th><th>Use It For</th></tr></thead>
+              <tbody>
+                <tr><td><kbd>1</kbd></td><td>Seam-up.</td><td>Control, hit-the-deck bowling, new-ball pressure.</td></tr>
+                <tr><td><kbd>2</kbd></td><td>Outswing.</td><td>Move the ball away from the batter.</td></tr>
+                <tr><td><kbd>3</kbd></td><td>Inswing.</td><td>Attack pads, stumps and LBW routes.</td></tr>
+                <tr><td><kbd>4</kbd></td><td>Off-spin.</td><td>Grip on dry surfaces, vary pace and line.</td></tr>
+                <tr><td><kbd>5</kbd></td><td>Leg-spin.</td><td>Turn away, create edges and misreads.</td></tr>
+                <tr><td><kbd>6</kbd></td><td>Googly.</td><td>Disguise spin direction.</td></tr>
+                <tr><td><kbd>7</kbd></td><td>Slower ball.</td><td>Death overs, miscued lofts and timing disruption.</td></tr>
+                <tr><td><kbd>Arrows</kbd></td><td>Move line and length target.</td><td>Left/right sets line, up/down sets length.</td></tr>
+                <tr><td><kbd>Space</kbd> x2</td><td>Start run-up, then release.</td><td>Second press near the crease determines accuracy.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="tab-panel" id="tab-running">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Input</th><th>Action</th><th>Use It For</th></tr></thead>
+              <tbody>
+                <tr><td><kbd>R</kbd></td><td>Take a run or call for another.</td><td>Singles, twos, pressure running and byes.</td></tr>
+                <tr><td><kbd>F</kbd></td><td>Send back.</td><td>Abort risky runs, avoid run outs after misfields.</td></tr>
+                <tr><td>Automatic</td><td>Grounding and dives are simulated.</td><td>Close run-out decisions include crossing, crease and return throw timing.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="tab-panel" id="tab-general">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Input</th><th>Action</th><th>Use It For</th></tr></thead>
+              <tbody>
+                <tr><td><kbd>Enter</kbd></td><td>Skip pause or continue.</td><td>Move through between-ball delays and innings prompts.</td></tr>
+                <tr><td><kbd>Esc</kbd></td><td>Pause.</td><td>Resume or quit to title.</td></tr>
+                <tr><td><kbd>1</kbd> / <kbd>2</kbd> / <kbd>3</kbd></td><td>Watch-mode playback speed.</td><td>Live, 2x and 4x broadcast pacing.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="simulation" data-search>
+        <div class="section-head">
+          <h2>Simulation Model</h2>
+          <p class="lead">The game is built around real-world units and live physics: meters, kilograms, seconds, regulation ball dimensions, pitch dimensions and procedural player rigs.</p>
+        </div>
+        <div class="grid">
+          <article class="card span-6 pitch-diagram" aria-label="Pitch systems diagram">
+            <div class="pitch-lane"></div>
+            <div class="marker" style="--x:50;--y:16">Bowler release</div>
+            <div class="marker" style="--x:43;--y:43">Pitch bounce</div>
+            <div class="marker" style="--x:57;--y:67">Bat contact</div>
+            <div class="marker" style="--x:50;--y:84">Keeper and stumps</div>
+          </article>
+          <article class="card span-6">
+            <h3>What Is Actually Simulated</h3>
+            <ul>
+              <li>Quadratic drag, Magnus lift, seam axis, spin and swing.</li>
+              <li>Conventional swing that fades with shine, plus reverse swing with wear and pace.</li>
+              <li>Pitch restitution, friction, seam grip, variable bounce and rolling resistance.</li>
+              <li>Bat-ball collision with contact quality, edges, misses and mistimed chips.</li>
+              <li>Fielding reaction, pursuit, catch probability, dives, throws and overthrows.</li>
+              <li>Dismissals including bowled, caught, LBW, run out and stumped.</li>
+            </ul>
+          </article>
+          <article class="card span-12">
+            <h3>Surfaces and Conditions</h3>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Pitch</th><th>Behavior</th><th>Best Bowling Plans</th><th>Batting Response</th></tr></thead>
+                <tbody>
+                  <tr><td>Green Seamer</td><td>High seam catch, lively bounce, useful pace.</td><td>Full channels, fourth-stump lines, outswing.</td><td>Play late, defend good balls, punish overpitch.</td></tr>
+                  <tr><td>Dry Turner</td><td>Higher friction and variable bounce, more spin grip.</td><td>Off-spin, leg-spin, attacking pads and rough.</td><td>Sweep carefully, use feet, avoid hard hands.</td></tr>
+                  <tr><td>Flat Batting Deck</td><td>Hard surface, consistent bounce, lower seam threat.</td><td>Yorkers, slower balls, changes of pace.</td><td>Trust bounce, drive on merit, target gaps.</td></tr>
+                  <tr><td>Damp Overcast</td><td>Lower bounce, high seam influence and heavier ball movement.</td><td>Inswing, outswing, top-of-off discipline.</td><td>Leave wider lines, protect stumps and pads.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+          <article class="card span-4">
+            <h3>Real Dimensions</h3>
+            <p>The constants use SI units: 9.81 m/s gravity, 20.12 m pitch length, 0.7112 m stumps, 0.965 m bat length and a regulation 0.156 kg ball.</p>
+          </article>
+          <article class="card span-4">
+            <h3>Characters</h3>
+            <p>Cricketers are procedural capsule/sphere rigs with helmets, caps, pads, bat, gait animation, batting stance, bowling action, keeper crouch and celebration poses.</p>
+          </article>
+          <article class="card span-4">
+            <h3>AI</h3>
+            <p>Bowler brains choose plans by phase and conditions. Batter brains manage shot choice, risk and resource pressure. Captaincy adjusts fields based on scoring patterns.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="strategy" data-search>
+        <div class="section-head">
+          <h2>Strategy Guide</h2>
+          <p class="lead">Good KRIKET play comes from reading line, length, phase and risk. The ball obeys physics, so the best response depends on what the delivery is actually doing.</p>
+        </div>
+        <div class="grid">
+          <article class="card span-6">
+            <h3>Batting Checklist</h3>
+            <div class="checklist" data-checklist="batting">
+              <label class="check"><input type="checkbox" /><span>Watch the line first. If the ball threatens pads or stumps, defend or play straight.</span></label>
+              <label class="check"><input type="checkbox" /><span>Use the aim wedge before the shot. A good swing with the wrong line still creates edges.</span></label>
+              <label class="check"><input type="checkbox" /><span>Drive full balls, cut width, pull short balls and sweep spin only when the length allows it.</span></label>
+              <label class="check"><input type="checkbox" /><span>Call runs early with <kbd>R</kbd>, but send back with <kbd>F</kbd> if the fielder attacks the ball cleanly.</span></label>
+            </div>
+          </article>
+          <article class="card span-6">
+            <h3>Bowling Checklist</h3>
+            <div class="checklist" data-checklist="bowling">
+              <label class="check"><input type="checkbox" /><span>Use new-ball swing in humid or overcast conditions before shine fades.</span></label>
+              <label class="check"><input type="checkbox" /><span>On green surfaces, hit a fourth-stump line and let seam catchiness create movement.</span></label>
+              <label class="check"><input type="checkbox" /><span>On dry turners, bring spin into play and vary pace to create mistimed contact.</span></label>
+              <label class="check"><input type="checkbox" /><span>At the death, mix yorkers and slower balls. Force lofted mistakes, not just dot balls.</span></label>
+            </div>
+          </article>
+          <article class="card span-12 callout">
+            <strong>Core principle:</strong> KRIKET does not simply ask whether you pressed the right shot button. It asks whether your timing, line read, delivery physics and field context all agree.
+          </article>
+        </div>
+      </section>
+
+      <section id="presentation" data-search>
+        <div class="section-head">
+          <h2>Presentation</h2>
+          <p class="lead">The game aims for broadcast cricket: readable score state, visible ball physics, lively stadium context and camera decisions that follow match events.</p>
+        </div>
+        <div class="grid">
+          <article class="card span-4">
+            <h3>HUD</h3>
+            <p>The scorebug shows team, score, wickets, overs, current rate and over progress. The strip shows batter and bowler lines. Recent-ball bubbles help read momentum.</p>
+          </article>
+          <article class="card span-4">
+            <h3>Cameras</h3>
+            <p>The director supports TV framing, ball-follow, wicket zoom, side-on replay and behind-batter perspectives. QA hooks can freeze and move the camera for exact screenshots.</p>
+          </article>
+          <article class="card span-4">
+            <h3>World</h3>
+            <p>The stadium includes crowd color, advertisements, boundary rope, pitch texture, footmarks, cracks, sky presets and day, twilight or night lighting with floodlights.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="roadmap" data-search>
+        <div class="section-head">
+          <h2>Perfect Simulator Plan</h2>
+          <p class="lead">The current game already simulates the core contest. The path to a near-complete cricket sport simulator is about depth, authenticity, career context, tooling and polish.</p>
+        </div>
+        <div class="filters" aria-label="Roadmap filters">
+          <button class="filter active" data-filter="all">All</button>
+          <button class="filter" data-filter="now">Current Core</button>
+          <button class="filter" data-filter="next">Next Milestones</button>
+          <button class="filter" data-filter="later">Long Term</button>
+        </div>
+        <div class="timeline">
+          <article class="card roadmap-item" data-phase="now">
+            <span class="tag now">Current</span>
+            <div><h3>Physics-first match engine</h3><p>Keep ball flight, bounce, bat collision, fielding and running as real interactions. Avoid canned outcomes wherever possible.</p></div>
+            <strong>Foundation</strong>
+          </article>
+          <article class="card roadmap-item" data-phase="now">
+            <span class="tag now">Current</span>
+            <div><h3>Playable all-format cricket</h3><p>T20, ODI and Test provide different time horizons, selection pressure, wear and match-state strategy.</p></div>
+            <strong>Formats</strong>
+          </article>
+          <article class="card roadmap-item" data-phase="next">
+            <span class="tag next">Next</span>
+            <div><h3>Richer player individuality</h3><p>Add batting style traits, bowling release signatures, fatigue curves, confidence, form, weak zones and preferred scoring areas.</p></div>
+            <strong>Players</strong>
+          </article>
+          <article class="card roadmap-item" data-phase="next">
+            <span class="tag next">Next</span>
+            <div><h3>Advanced tactical systems</h3><p>Add manual field editor, bowling plans by batter, review decisions, field restrictions, powerplays and deeper captaincy.</p></div>
+            <strong>Tactics</strong>
+          </article>
+          <article class="card roadmap-item" data-phase="next">
+            <span class="tag next">Next</span>
+            <div><h3>More authentic motion and contact</h3><p>Improve foot planting, shot follow-throughs, keeper take animations, appeal chains, run-out dives and collision readability.</p></div>
+            <strong>Animation</strong>
+          </article>
+          <article class="card roadmap-item" data-phase="next">
+            <span class="tag next">Next</span>
+            <div><h3>Scorecards and analysis</h3><p>Add wagon wheel, pitch map, beehive, partnership charts, over-by-over graph, session summaries and player comparison pages.</p></div>
+            <strong>Analytics</strong>
+          </article>
+          <article class="card roadmap-item" data-phase="later">
+            <span class="tag later">Long Term</span>
+            <div><h3>Career and tournaments</h3><p>Build series, leagues, tours, squads, player development, injuries, selection, contracts and historical records.</p></div>
+            <strong>Modes</strong>
+          </article>
+          <article class="card roadmap-item" data-phase="later">
+            <span class="tag later">Long Term</span>
+            <div><h3>Online and shared play</h3><p>Support remote spectating, deterministic replay sharing, async challenges and eventually live multiplayer once netcode is ready.</p></div>
+            <strong>Network</strong>
+          </article>
+          <article class="card roadmap-item" data-phase="later">
+            <span class="tag later">Long Term</span>
+            <div><h3>Simulation credibility loop</h3><p>Use automated balance sweeps, telemetry, replay review and statistical targets to tune scoring rates, dismissal mix and phase behavior.</p></div>
+            <strong>Quality</strong>
+          </article>
+        </div>
+      </section>
+
+      <section id="qa" data-search>
+        <div class="section-head">
+          <h2>QA and Tuning</h2>
+          <p class="lead">The repository includes scripts for screenshots, scripted play, AI-vs-AI sweeps and offline physics tuning. This is how the simulator should stay measurable as it grows.</p>
+        </div>
+        <div class="grid">
+          <article class="card span-6">
+            <h3>Harnesses</h3>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Script</th><th>Purpose</th></tr></thead>
+                <tbody>
+                  <tr><td><kbd>qa/shoot.mjs</kbd></td><td>Headless screenshot capture with optional in-page camera or simulation commands.</td></tr>
+                  <tr><td><kbd>qa/sim.mjs</kbd> / <kbd>qa/sim2.mjs</kbd></td><td>Full-match AI-vs-AI balance sweeps with scoring and dismissal breakdowns.</td></tr>
+                  <tr><td><kbd>qa/play.mjs</kbd></td><td>Scripted human-style input flows for batting and bowling checks.</td></tr>
+                  <tr><td><kbd>qa/physicslab.ts</kbd></td><td>Offline physics experiments for delivery and bounce tuning.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+          <article class="card span-6">
+            <h3>Simulator Maturity Targets</h3>
+            <div class="meter-row">
+              <div class="meter-label"><span>Core match loop</span><span>85%</span></div>
+              <div class="meter" style="--value:85%"><span></span></div>
+              <div class="meter-label"><span>Physics depth</span><span>78%</span></div>
+              <div class="meter" style="--value:78%"><span></span></div>
+              <div class="meter-label"><span>Animation polish</span><span>54%</span></div>
+              <div class="meter" style="--value:54%"><span></span></div>
+              <div class="meter-label"><span>Broadcast presentation</span><span>66%</span></div>
+              <div class="meter" style="--value:66%"><span></span></div>
+              <div class="meter-label"><span>Career ecosystem</span><span>15%</span></div>
+              <div class="meter" style="--value:15%"><span></span></div>
+            </div>
+          </article>
+          <article class="card span-12">
+            <h3>Glossary</h3>
+            <div class="glossary">
+              <p><strong>Seam presentation:</strong> the ball's seam angle as it hits air and pitch, influencing swing and deviation.</p>
+              <p><strong>Magnus lift:</strong> aerodynamic force from spin, used for dip, drift and turn behavior.</p>
+              <p><strong>Variable bounce:</strong> surface randomness that produces shooters or the odd ball that rears.</p>
+              <p><strong>Contact quality:</strong> a 0-to-1 signal for how well the bat met the delivery.</p>
+              <p><strong>Free hit:</strong> a no-ball consequence where some dismissal types are disallowed.</p>
+              <p><strong>Field preset:</strong> a tactical placement set chosen by the AI captain for phase and batter behavior.</p>
+              <p><strong>Wagon wheel:</strong> a future shot map showing scoring direction and distance.</p>
+              <p><strong>Beehive:</strong> a delivery map showing where balls pass the batter or stumps.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      KRIKET manual. Built for the kricket2 original character design branch.
+    </footer>
+
+    <script>
+      const navLinks = [...document.querySelectorAll("nav a")];
+      const sections = navLinks.map((link) => document.querySelector(link.getAttribute("href"))).filter(Boolean);
+
+      const setActiveLink = () => {
+        let active = sections[0];
+        for (const section of sections) {
+          if (section.getBoundingClientRect().top <= 110) active = section;
+        }
+        navLinks.forEach((link) => {
+          link.classList.toggle("active", link.getAttribute("href") === "#" + active.id);
+        });
+      };
+      document.addEventListener("scroll", setActiveLink, { passive: true });
+      setActiveLink();
+
+      document.querySelectorAll(".tab").forEach((button) => {
+        button.addEventListener("click", () => {
+          const id = button.dataset.tab;
+          document.querySelectorAll(".tab").forEach((tab) => tab.classList.toggle("active", tab === button));
+          document.querySelectorAll(".tab-panel").forEach((panel) => panel.classList.toggle("active", panel.id === "tab-" + id));
+        });
+      });
+
+      document.querySelectorAll(".filter").forEach((button) => {
+        button.addEventListener("click", () => {
+          const filter = button.dataset.filter;
+          document.querySelectorAll(".filter").forEach((item) => item.classList.toggle("active", item === button));
+          document.querySelectorAll(".roadmap-item").forEach((item) => {
+            item.classList.toggle("hidden", filter !== "all" && item.dataset.phase !== filter);
+          });
+        });
+      });
+
+      const checklistKey = "kriket-manual-checks";
+      const savedChecks = JSON.parse(localStorage.getItem(checklistKey) || "{}");
+      document.querySelectorAll(".checklist").forEach((list) => {
+        const group = list.dataset.checklist;
+        list.querySelectorAll("input").forEach((input, index) => {
+          const key = group + "-" + index;
+          input.checked = Boolean(savedChecks[key]);
+          input.addEventListener("change", () => {
+            savedChecks[key] = input.checked;
+            localStorage.setItem(checklistKey, JSON.stringify(savedChecks));
+          });
+        });
+      });
+
+      const searchable = [...document.querySelectorAll("[data-search]")];
+      document.querySelector("#search").addEventListener("input", (event) => {
+        const term = event.target.value.trim();
+        searchable.forEach((node) => node.classList.remove("hidden"));
+        if (!term) {
+          setActiveLink();
+          return;
+        }
+        searchable.forEach((node) => {
+          const text = node.textContent || "";
+          const match = text.toLowerCase().includes(term.toLowerCase());
+          node.classList.toggle("hidden", !match);
+        });
+      });
+    </script>
+  </body>
+</html>
